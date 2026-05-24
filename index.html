@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TinyBotics | TinyBot Pro</title>
+<meta name="description" content="Buy TinyBot Pro AI Robot">
+<meta property="og:title" content="TinyBotics | TinyBot Pro">
+<meta property="og:description" content="Buy TinyBot Pro AI Robot">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+<nav class="navbar">
+<div class="brand">TinyBotics</div>
+<button class="hamburger" id="hamburgerBtn">☰</button>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="faq.html">FAQ</a></li>
+<li><a href="contact.html">Contact</a></li>
+<li><a href="orders.html">My Orders</a></li>
+</ul>
+<div class="auth-area">
+<a href="login.html">Login</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="hero-grid container">
+<article>
+<h1>TinyBot Pro</h1>
+<p>AI robot powered by GPT-4 intelligence.</p>
+<button id="buyNowBtn" class="btn-primary">Buy Now ₹2,500</button>
+</article>
+<aside>
+<img src="images/robot.png" alt="TinyBot Pro" onerror="this.src='https://placehold.co/600x600'">
+</aside>
+</section>
+
+<section class="trust-row container">
+<div>Secure UPI Payment</div>
+<div>Free Delivery Across India</div>
+<div>Order Verified Manually</div>
+<div>Track Your Order Live</div>
+<div>GPT-4 Powered</div>
+</section>
+
+<section class="features-grid container">
+<div class="feature-card"><h3>GPT-4 Intelligence</h3></div>
+<div class="feature-card"><h3>Voice Control</h3></div>
+<div class="feature-card"><h3>Emotional Display</h3></div>
+<div class="feature-card"><h3>USB Type-C</h3></div>
+<div class="feature-card"><h3>1000mAh Battery</h3></div>
+<div class="feature-card"><h3>Always Connected</h3></div>
+</section>
+
+<section class="container">
+<table>
+<tr><th>Product</th><td>TinyBot Pro</td></tr>
+<tr><th>Battery</th><td>1000mAh</td></tr>
+<tr><th>Connectivity</th><td>Wi-Fi + Bluetooth 5.0</td></tr>
+</table>
+</section>
+
+<section class="container">
+<video controls poster="images/poster.jpg">
+<source src="YOUR_GITHUB_RAW_VIDEO_LINK_HERE" type="video/mp4">
+</video>
+</section>
+</main>
+<script type="module" src="js/ui.js"></script>
+
+<script type="module">
+import {auth,db} from './js/firebase.js';
+import {doc,getDoc,setDoc} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import {toast} from './js/ui.js';
+import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+onAuthStateChanged(auth, async user=>{
+ if(user){
+   await setDoc(doc(db,'visitors',user.uid),{
+    lastSeen:new Date(),
+    email:user.email||'',
+    name:user.displayName||'',
+    userAgent:navigator.userAgent,
+    platform:navigator.platform,
+    language:navigator.language,
+    screenW:window.innerWidth,
+    screenH:window.innerHeight,
+    referrer:document.referrer||'direct'
+   },{merge:true});
+ }
+});
+
+document.getElementById('buyNowBtn').onclick=async()=>{
+ const user=auth.currentUser;
+ if(!user){
+   toast('Please login first');
+   setTimeout(()=>location.href='login.html',1500);
+   return;
+ }
+ const snap=await getDoc(doc(db,'users',user.uid));
+ if(!snap.exists() || !snap.data().address){
+   toast('Please add shipping address');
+   setTimeout(()=>location.href='login.html',1500);
+   return;
+ }
+ location.href='payment.html';
+}
+</script>
+
+</body>
+</html>

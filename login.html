@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | TinyBotics</title>
+<meta name="description" content="Authentication portal">
+<meta property="og:title" content="Login | TinyBotics">
+<meta property="og:description" content="Authentication portal">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+<nav class="navbar">
+<div class="brand">TinyBotics</div>
+<button class="hamburger" id="hamburgerBtn">☰</button>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="faq.html">FAQ</a></li>
+<li><a href="contact.html">Contact</a></li>
+<li><a href="orders.html">My Orders</a></li>
+</ul>
+<div class="auth-area">
+<a href="login.html">Login</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="auth-page">
+<div class="auth-container container">
+<h1>Authentication Portal</h1>
+<form id="authForm">
+<div class="form-group"><label>Email</label><input id="email" type="email" required></div>
+<div class="form-group"><label>Password</label><input id="password" type="password" required></div>
+<button type="submit">Continue</button>
+</form>
+<button id="toggleBtn">Switch Login / Signup</button>
+</div>
+</section>
+
+<div class="modal hidden" id="addressModal">
+<div class="modal-content">
+<h2>Shipping Address</h2>
+<form id="addressForm">
+<input id="fullName" placeholder="Full Name" required>
+<input id="phone" pattern="[0-9]{10}" placeholder="10 Digit Mobile" required>
+<input id="readonlyEmail" readonly>
+<input id="street" placeholder="Street / Area" required>
+<input id="city" placeholder="City" required>
+<input id="state" placeholder="State" required>
+<input id="pincode" pattern="[0-9]{6}" placeholder="Pincode" required>
+<input id="landmark" placeholder="Landmark">
+<button type="submit">Save Address</button>
+<button type="button" id="skipBtn">Skip</button>
+</form>
+</div>
+</div>
+</main>
+<script type="module" src="js/ui.js"></script>
+
+<script type="module">
+import {auth,db,serverTimestamp} from './js/firebase.js';
+import {createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {doc,getDoc,setDoc} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+let signup=false;
+toggleBtn.onclick=()=>signup=!signup;
+
+authForm.onsubmit=async(e)=>{
+e.preventDefault();
+const email=email.value,password=password.value;
+let cred;
+if(signup){
+ cred=await createUserWithEmailAndPassword(auth,email,password);
+}else{
+ cred=await signInWithEmailAndPassword(auth,email,password);
+}
+const snap=await getDoc(doc(db,'users',cred.user.uid));
+if(snap.exists() && snap.data().address){location.href='index.html';return;}
+addressModal.classList.remove('hidden');
+readonlyEmail.value=cred.user.email;
+};
+
+addressForm.onsubmit=async(e)=>{
+e.preventDefault();
+const user=auth.currentUser;
+await updateProfile(user,{displayName:fullName.value});
+await setDoc(doc(db,'users',user.uid),{
+uid:user.uid,
+name:fullName.value,
+email:user.email,
+phone:phone.value,
+address:{
+name:fullName.value,
+phone:phone.value,
+street:street.value,
+city:city.value,
+state:state.value,
+pincode:pincode.value,
+landmark:landmark.value
+},
+updatedAt:serverTimestamp()
+},{merge:true});
+location.href='index.html';
+};
+skipBtn.onclick=()=>location.href='index.html';
+</script>
+
+</body>
+</html>

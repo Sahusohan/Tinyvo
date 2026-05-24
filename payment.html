@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment | TinyBotics</title>
+<meta name="description" content="UPI checkout">
+<meta property="og:title" content="Payment | TinyBotics">
+<meta property="og:description" content="UPI checkout">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+<nav class="navbar">
+<div class="brand">TinyBotics</div>
+<button class="hamburger" id="hamburgerBtn">☰</button>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="faq.html">FAQ</a></li>
+<li><a href="contact.html">Contact</a></li>
+<li><a href="orders.html">My Orders</a></li>
+</ul>
+<div class="auth-area">
+<a href="login.html">Login</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="container">
+<h1>UPI Checkout</h1>
+<div class="cards-grid">
+<div class="card">
+<h3>Order Summary</h3>
+<p>TinyBot Pro</p>
+<p>₹2,500</p>
+<p>Free Delivery</p>
+</div>
+<div class="card">
+<h3>Delivery Address</h3>
+<div id="addressBox"></div>
+</div>
+</div>
+
+<div class="payment-box card">
+<img src="YOUR_GITHUB_RAW_QR_IMAGE_LINK_HERE" alt="UPI QR">
+<p>Open UPI App → Scan QR → Pay ₹2500 → Return to site.</p>
+<button id="confirmBtn">I've Paid — Confirm My Order</button>
+</div>
+</section>
+</main>
+<script type="module" src="js/ui.js"></script>
+
+<script type="module">
+import {auth,db,serverTimestamp} from './js/firebase.js';
+import {doc,getDoc,addDoc,collection} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import {toast} from './js/ui.js';
+
+const user=auth.currentUser;
+if(!user) location.href='login.html';
+
+const snap=await getDoc(doc(db,'users',user.uid));
+const data=snap.data();
+addressBox.innerHTML=`<p>${data.address.street}, ${data.address.city}</p>`;
+
+confirmBtn.onclick=async()=>{
+ await addDoc(collection(db,'orders'),{
+  userId:user.uid,
+  userName:data.name,
+  userEmail:data.email,
+  address:data.address,
+  product:'TinyBot Pro',
+  price:2500,
+  status:'verifying_payment',
+  trackingLink:'',
+  paymentConfirmedByUser:true,
+  paymentConfirmedAt:serverTimestamp(),
+  paymentVerifiedByAdmin:false,
+  createdAt:serverTimestamp()
+ });
+ toast('Order placed! We will verify shortly');
+ setTimeout(()=>location.href='orders.html',1500);
+}
+</script>
+
+</body>
+</html>

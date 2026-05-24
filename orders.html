@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders | TinyBotics</title>
+<meta name="description" content="Customer order dashboard">
+<meta property="og:title" content="Orders | TinyBotics">
+<meta property="og:description" content="Customer order dashboard">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+<nav class="navbar">
+<div class="brand">TinyBotics</div>
+<button class="hamburger" id="hamburgerBtn">☰</button>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="faq.html">FAQ</a></li>
+<li><a href="contact.html">Contact</a></li>
+<li><a href="orders.html">My Orders</a></li>
+</ul>
+<div class="auth-area">
+<a href="login.html">Login</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="container">
+<h1>My Orders</h1>
+<div id="ordersGrid" class="cards-grid"></div>
+</section>
+</main>
+<script type="module" src="js/ui.js"></script>
+
+<script type="module">
+import {auth,db} from './js/firebase.js';
+import {collection,query,where,getDocs} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const user=auth.currentUser;
+if(!user) location.href='login.html';
+
+const q=query(collection(db,'orders'),where('userId','==',user.uid));
+const snap=await getDocs(q);
+
+snap.forEach(docu=>{
+ const d=docu.data();
+ ordersGrid.innerHTML+=`
+ <article class="order-card">
+ <h3>${d.product}</h3>
+ <p>₹${d.price}</p>
+ <p>${d.status}</p>
+ <p>${d.address.street}, ${d.address.city}</p>
+ ${d.trackingLink?`<a href="${d.trackingLink}">Track Order</a>`:'Tracking will appear after shipping'}
+ </article>`;
+});
+</script>
+
+</body>
+</html>

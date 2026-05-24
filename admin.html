@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | TinyBotics</title>
+<meta name="description" content="Administration dashboard">
+<meta property="og:title" content="Admin | TinyBotics">
+<meta property="og:description" content="Administration dashboard">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+<nav class="navbar">
+<div class="brand">TinyBotics</div>
+<button class="hamburger" id="hamburgerBtn">☰</button>
+<ul class="nav-links">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="faq.html">FAQ</a></li>
+<li><a href="contact.html">Contact</a></li>
+<li><a href="orders.html">My Orders</a></li>
+</ul>
+<div class="auth-area">
+<a href="login.html">Login</a>
+</div>
+</nav>
+</header>
+
+<main>
+<section class="admin-grid">
+<aside class="sidebar">
+<h2>Admin</h2>
+<ul>
+<li>Dashboard</li>
+<li>Orders</li>
+<li>Visitors</li>
+<li><button id="logoutBtn">Logout</button></li>
+</ul>
+</aside>
+
+<section class="container">
+<div class="stats-grid">
+<div class="stat-card"><h3>Total Orders</h3><p id="totalOrders"></p></div>
+<div class="stat-card"><h3>Revenue</h3><p id="revenue"></p></div>
+</div>
+
+<h2>Orders</h2>
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Order ID</th><th>Customer</th><th>Status</th><th>Tracking</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="ordersTable"></tbody>
+</table>
+</div>
+
+<h2>Visitors</h2>
+<div id="visitorsGrid" class="cards-grid"></div>
+</section>
+</section>
+</main>
+<script type="module" src="js/ui.js"></script>
+
+<script type="module">
+import {auth,db} from './js/firebase.js';
+import {signOut} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {collection,getDocs,updateDoc,deleteDoc,doc} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const ADMIN_EMAIL='your-admin@email.com';
+
+if(!auth.currentUser || auth.currentUser.email!==ADMIN_EMAIL){
+document.body.innerHTML='<main class="center-page"><h1>Access Denied</h1></main>';
+throw new Error('Unauthorized');
+}
+
+logoutBtn.onclick=async()=>{await signOut(auth);location.href='index.html';}
+
+const orders=await getDocs(collection(db,'orders'));
+let revenue=0;
+totalOrders.textContent=orders.size;
+
+orders.forEach(o=>{
+ const d=o.data();
+ revenue+=d.price||0;
+ ordersTable.innerHTML+=`
+ <tr>
+ <td>${o.id}</td>
+ <td>${d.userName}<br>${d.userEmail}</td>
+ <td>
+ <select data-id="${o.id}" class="status-select">
+ <option ${d.status==='pending'?'selected':''}>pending</option>
+ <option ${d.status==='verifying_payment'?'selected':''}>verifying_payment</option>
+ <option ${d.status==='confirmed'?'selected':''}>confirmed</option>
+ <option ${d.status==='shipped'?'selected':''}>shipped</option>
+ <option ${d.status==='delivered'?'selected':''}>delivered</option>
+ </select>
+ </td>
+ <td><input value="${d.trackingLink||''}" id="track-${o.id}"></td>
+ <td>
+ ${d.status==='verifying_payment'?`<button class="confirm-pay" data-id="${o.id}">Confirm Payment</button>`:''}
+ <button class="save-btn" data-id="${o.id}">Save</button>
+ <button class="delete-btn" data-id="${o.id}">Delete</button>
+ </td>
+ </tr>`;
+});
+
+revenue.textContent='₹'+revenue;
+
+document.addEventListener('click',async e=>{
+ const id=e.target.dataset.id;
+ if(e.target.classList.contains('save-btn')){
+   await updateDoc(doc(db,'orders',id),{
+    status:document.querySelector(`[data-id="${id}"].status-select`).value,
+    trackingLink:document.getElementById(`track-${id}`).value
+   });
+ }
+ if(e.target.classList.contains('confirm-pay')){
+   await updateDoc(doc(db,'orders',id),{
+    status:'confirmed',
+    paymentVerifiedByAdmin:true
+   });
+ }
+ if(e.target.classList.contains('delete-btn')){
+   if(confirm('Delete order?')) await deleteDoc(doc(db,'orders',id));
+ }
+});
+
+const visitors=await getDocs(collection(db,'visitors'));
+visitors.forEach(v=>{
+ const d=v.data();
+ visitorsGrid.innerHTML+=`
+ <article class="visitor-card">
+ <span class="online-dot"></span>
+ <h3>${d.name||'User'}</h3>
+ <p>${d.email}</p>
+ <p>${d.platform}</p>
+ <p>${d.language}</p>
+ <p>${d.screenW}x${d.screenH}</p>
+ </article>`;
+});
+</script>
+
+</body>
+</html>
