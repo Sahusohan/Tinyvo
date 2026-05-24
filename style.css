@@ -1,0 +1,47 @@
+
+:root{
+  --container:1200px;
+  --space-xs:.5rem;
+  --space-sm:1rem;
+  --space-md:2rem;
+  --space-lg:4rem;
+  --radius:12px;
+  --border:1px solid #dcdcdc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;line-height:1.6;padding-top:80px}
+img,video{max-width:100%;display:block}
+.container{max-width:var(--container);margin:auto;padding:var(--space-md)}
+.site-header{position:fixed;top:0;width:100%;background:#fff;z-index:999;border-bottom:var(--border)}
+.navbar{display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem}
+.nav-links{display:flex;gap:1rem;list-style:none}
+.nav-links a{text-decoration:none;color:#000}
+.hamburger{display:none}
+.hero-grid,.features-grid,.trust-row,.stats-grid,.cards-grid{display:grid;gap:1rem}
+.hero-grid{grid-template-columns:repeat(2,1fr);align-items:center;padding:4rem 2rem}
+.features-grid,.cards-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));padding:2rem}
+.trust-row{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));padding:1rem 2rem}
+.feature-card,.card,.stat-card,.order-card,.visitor-card{border:var(--border);padding:1rem;border-radius:var(--radius)}
+.btn-primary,.btn-outline,button{padding:.9rem 1.2rem;border:var(--border);cursor:pointer;background:#fff}
+.form-group{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+input,textarea,select{padding:.9rem;border:var(--border);width:100%}
+.auth-page,.center-page{min-height:80vh;display:grid;place-items:center}
+.auth-container,.payment-box,.admin-layout,.table-wrap{width:100%}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:2000}
+.modal-content{background:#fff;padding:2rem;width:min(600px,95%)}
+.hidden{display:none}
+.toast{position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:1rem;border-radius:8px;opacity:0;transition:.3s;z-index:3000}
+.toast.show{opacity:1}
+.status-pending,.status-verifying,.status-confirmed,.status-shipped,.status-delivered{padding:.4rem .8rem;border-radius:20px;border:var(--border);display:inline-block}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+td,th{padding:1rem;border:var(--border);text-align:left}
+.admin-grid{display:grid;grid-template-columns:260px 1fr}
+.sidebar{border-right:var(--border);padding:1rem;height:100vh;position:sticky;top:80px}
+.online-dot{width:10px;height:10px;border-radius:50%;background:green;display:inline-block}
+@media(max-width:768px){
+.hero-grid,.admin-grid{grid-template-columns:1fr}
+.nav-links{display:none;flex-direction:column;position:absolute;top:70px;left:0;width:100%;background:#fff;padding:1rem}
+.nav-links.active{display:flex}
+.hamburger{display:block}
+}
